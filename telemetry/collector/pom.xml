@@ -61,21 +61,13 @@
     <build>
         <pluginManagement>
             <plugins>
-                <!--                <plugin>-->
-                <!--                    <groupId>org.apache.maven.plugins</groupId>-->
-                <!--                    <artifactId>maven-compiler-plugin</artifactId>-->
-                <!--                    <version>3.13.0</version> &lt;!&ndash; Use a recent version &ndash;&gt;-->
-                <!--                    <configuration>-->
-                <!--                        <annotationProcessorPaths>-->
-                <!--                            <path>-->
-                <!--                                <groupId>org.projectlombok</groupId>-->
-                <!--                                <artifactId>lombok</artifactId>-->
-                <!--                                <version>1.18.38</version>-->
-                <!--                            </path>-->
-                <!--                        </annotationProcessorPaths>-->
-                <!--                        <generatedSourcesDirectory>../target/generated-sources/annotations</generatedSourcesDirectory>-->
-                <!--                    </configuration>-->
-                <!--                </plugin>-->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>ru.practicum.collector.CollectorApp</mainClass>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
