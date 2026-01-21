@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Service;
 import ru.practicum.collector.hubEventDto.HubEventCommonDto;
-import ru.practicum.collector.sensorEventDto.SensorEventCommonDto;
-import ru.practicum.collector.sensorEventMapper.SensorEventAvroMapper;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.util.List;
 
@@ -18,7 +15,7 @@ public class HubEventMapperCommon {
     private final List<HubEventAvroMapper<?>> mappers;
 
     public SpecificRecordBase toAvro(HubEventCommonDto event) {
-        SpecificRecordBase payload =  mappers.stream()
+        SpecificRecordBase payload = mappers.stream()
                 .filter(m -> m.supports(event))
                 .findFirst()
                 .map(m -> m.toAvroGeneric(event))

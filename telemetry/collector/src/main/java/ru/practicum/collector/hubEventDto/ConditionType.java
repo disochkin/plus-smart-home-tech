@@ -1,5 +1,6 @@
 package ru.practicum.collector.hubEventDto;
 
-public enum ScenarioConditionType {
+public enum ConditionType {
     MOTION, LUMINOSITY, SWITCH, TEMPERATURE, CO2LEVEL, HUMIDITY
 }
+

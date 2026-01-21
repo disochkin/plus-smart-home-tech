@@ -15,7 +15,7 @@ public class SensorEventMapperCommon {
     private final List<SensorEventAvroMapper<?>> mappers;
 
     public SpecificRecordBase toAvro(SensorEventCommonDto event) {
-        SpecificRecordBase payload =  mappers.stream()
+        SpecificRecordBase payload = mappers.stream()
                 .filter(m -> m.supports(event))
                 .findFirst()
                 .map(m -> m.toAvroGeneric(event))

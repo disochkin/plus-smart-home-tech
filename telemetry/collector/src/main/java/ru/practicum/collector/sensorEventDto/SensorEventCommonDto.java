@@ -27,11 +27,12 @@ import java.time.Instant;
 @Setter
 @ToString
 public abstract class SensorEventCommonDto {
+    Instant timestamp = Instant.now();
     @NotBlank
     private String id;
     @NotBlank
     private String hubId;
-    Instant timestamp = Instant.now();
+
     @NotNull
     public abstract SensorEventType getType();
 }

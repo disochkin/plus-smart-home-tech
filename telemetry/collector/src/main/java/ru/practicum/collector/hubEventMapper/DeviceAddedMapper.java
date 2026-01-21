@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.collector.hubEventDto.DeviceAddedDto;
 import ru.practicum.collector.hubEventDto.HubEventCommonDto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceType;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
 
 @Component
 public class DeviceAddedMapper implements HubEventAvroMapper<DeviceAddedDto> {
@@ -18,7 +18,7 @@ public class DeviceAddedMapper implements HubEventAvroMapper<DeviceAddedDto> {
     public SpecificRecordBase toAvro(DeviceAddedDto event) {
         return DeviceAddedEventAvro.newBuilder()
                 .setId(event.getId())
-                .setDeviceType(DeviceType.valueOf(event.getDeviceType().name()))
+                .setType(DeviceTypeAvro.valueOf(event.getDeviceType().name()))
                 .build();
     }
 

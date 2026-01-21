@@ -1,6 +1,5 @@
 package ru.practicum.collector;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.collector.hubEventDto.HubEventCommonDto;
-import ru.practicum.collector.hubEventMapper.HubEventAvroMapper;
 import ru.practicum.collector.hubEventMapper.HubEventMapperCommon;
-import ru.practicum.collector.sensorEventMapper.SensorEventMapperCommon;
 import ru.practicum.collector.sensorEventDto.SensorEventCommonDto;
+import ru.practicum.collector.sensorEventMapper.SensorEventMapperCommon;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,10 +35,8 @@ public class CollectorController {
     public ResponseEntity<String> collectHubEvent(@Valid @RequestBody HubEventCommonDto event) {
         SpecificRecordBase avro = hubEventMapperCommon.toAvro(event);
         log.debug("Запись в кафка: {}, ", avro.toString());
-        ProducerRecord pr = new ProducerRecord<>("telemetry.sensors.v1", avro);
+        ProducerRecord pr = new ProducerRecord<>("telemetry.hubs.v1", avro);
         client.getProducer().send(pr);
         return ResponseEntity.ok("OK");
     }
-
-
 }

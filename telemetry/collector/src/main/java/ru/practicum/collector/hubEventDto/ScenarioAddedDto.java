@@ -6,17 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.util.List;
 
 @Setter
 @Getter
 public class ScenarioAddedDto extends HubEventCommonDto {
-    @NotBlank
-    private String hubId;
-    private Instant timestamp = Instant.now();
-    @NotBlank
-    private String id;
 
     @NotBlank
     @Size(min = 3)
@@ -26,10 +20,7 @@ public class ScenarioAddedDto extends HubEventCommonDto {
     private List<ScenarioConditionDto> conditions;
 
     @NotNull
-    private List<DeviceAddedDto> actions;
-
-    @NotNull
-    HubEventType type;
+    private List<DeviceActionDto> actions;
 
     @Override
     public HubEventType getType() {

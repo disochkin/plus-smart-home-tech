@@ -5,9 +5,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class ScenarioConditionDto {
+public class DeviceActionDto {
     private String sensorId;
-    private ConditionType type;
-    private OperationType operation;
+    private ActionType type;
     private Integer value;
 }

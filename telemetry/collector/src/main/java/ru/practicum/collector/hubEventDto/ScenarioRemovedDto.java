@@ -1,17 +1,19 @@
 package ru.practicum.collector.hubEventDto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
 @Getter
-public class DeviceRemovedDto extends HubEventCommonDto {
+@Setter
+public class ScenarioRemovedDto extends HubEventCommonDto {
     @NotBlank
-    private String id;
+    @Size(min = 3)
+    private String name;
 
     @Override
     public HubEventType getType() {
-        return HubEventType.DEVICE_REMOVED;
+        return HubEventType.SCENARIO_REMOVED;
     }
 }
