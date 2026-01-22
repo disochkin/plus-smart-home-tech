@@ -1,4 +1,4 @@
-package ru.practicum.collector;
+package ru.practicum.collector.kafka;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -35,7 +35,7 @@ public class KafkaClientConfiguration {
                 Properties config = new Properties();
                 config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
                 config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-                config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.practicum.collector.AvroSerializer");
+                config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.practicum.collector.serializer.AvroSerializer");
                 producer = new KafkaProducer<>(config);
             }
 

@@ -1,4 +1,4 @@
-package ru.practicum.collector;
+package ru.practicum.collector.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.collector.kafka.KafkaClient;
 import ru.practicum.collector.hubEventDto.HubEventCommonDto;
 import ru.practicum.collector.hubEventMapper.HubEventMapperCommon;
 import ru.practicum.collector.sensorEventDto.SensorEventCommonDto;
