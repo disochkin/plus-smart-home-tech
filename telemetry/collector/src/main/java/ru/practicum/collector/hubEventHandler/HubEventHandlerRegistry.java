@@ -1,7 +1,7 @@
-package ru.practicum.collector.eventHandler;
+package ru.practicum.collector.hubEventHandler;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 
 import java.util.List;
 import java.util.Map;
@@ -9,18 +9,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-public class SensorEventHandlerRegistry {
+public class HubEventHandlerRegistry {
 
-    private final Map<SensorEventProto.PayloadCase, SensorEventHandler> handlers;
+    private final Map<HubEventProto.PayloadCase, HubEventHandler> handlers;
 
-    public SensorEventHandlerRegistry(List<SensorEventHandler> handlerList) {
+    public HubEventHandlerRegistry(List<HubEventHandler> handlerList) {
         this.handlers = handlerList.stream().collect(Collectors.toMap(
-                SensorEventHandler::getMessageType,
+                HubEventHandler::getMessageType,
                 Function.identity()));
     }
 
-    public void handle(SensorEventProto event) {
-        SensorEventHandler handler = handlers.get(event.getPayloadCase());
+    public void handle(HubEventProto event) {
+        HubEventHandler handler = handlers.get(event.getPayloadCase());
         if (handler == null) {
             throw new IllegalStateException(
                     "Нет хендлера для " + event.getPayloadCase());

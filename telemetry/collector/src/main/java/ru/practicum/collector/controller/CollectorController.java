@@ -7,19 +7,21 @@ import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import ru.practicum.collector.eventHandler.SensorEventHandlerRegistry;
-import ru.practicum.collector.kafka.KafkaClient;
+import ru.practicum.collector.hubEventHandler.HubEventHandlerRegistry;
+import ru.practicum.collector.sensorEventHandler.SensorEventHandlerRegistry;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
-import ru.yandex.practicum.grpc.telemetry.event.*;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
 @Slf4j
 @RequiredArgsConstructor
 @GrpcService
 public class CollectorController extends CollectorControllerGrpc.CollectorControllerImplBase {
-    private final KafkaClient kafkaClient;
     private final SensorEventHandlerRegistry sensorEventHandlerRegistry;
-    @Override
+    private final HubEventHandlerRegistry hubEventHandlerRegistry;
 
+
+    @Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         try {
             sensorEventHandlerRegistry.handle(request);
@@ -36,7 +38,16 @@ public class CollectorController extends CollectorControllerGrpc.CollectorContro
 
     @Override
     public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
-        log.info("STUB gRPC call: {}", request);
-        responseObserver.onNext(Empty.getDefaultInstance());
-        responseObserver.onCompleted();
-    }}
+        try {
+            hubEventHandlerRegistry.handle(request);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
+            ));
+        }
+    }
+}
