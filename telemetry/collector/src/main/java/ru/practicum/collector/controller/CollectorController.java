@@ -1,43 +1,53 @@
 package ru.practicum.collector.controller;
 
-import jakarta.validation.Valid;
+import com.google.protobuf.Empty;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.collector.kafka.KafkaClient;
-import ru.practicum.collector.hubEventDto.HubEventCommonDto;
-import ru.practicum.collector.hubEventMapper.HubEventMapperCommon;
-import ru.practicum.collector.sensorEventDto.SensorEventCommonDto;
-import ru.practicum.collector.sensorEventMapper.SensorEventMapperCommon;
+import net.devh.boot.grpc.server.service.GrpcService;
+import ru.practicum.collector.hubEventHandler.HubEventHandlerRegistry;
+import ru.practicum.collector.sensorEventHandler.SensorEventHandlerRegistry;
+import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
 @Slf4j
 @RequiredArgsConstructor
-@RestController
-public class CollectorController {
-    private final KafkaClient client;
-    private final SensorEventMapperCommon sensorEventMapperCommon;
-    private final HubEventMapperCommon hubEventMapperCommon;
+@GrpcService
+public class CollectorController extends CollectorControllerGrpc.CollectorControllerImplBase {
+    private final SensorEventHandlerRegistry sensorEventHandlerRegistry;
+    private final HubEventHandlerRegistry hubEventHandlerRegistry;
 
-    @PostMapping("/events/sensors")
-    public ResponseEntity<String> collectSensorEvent(@Valid @RequestBody SensorEventCommonDto event) {
-        SpecificRecordBase avro = sensorEventMapperCommon.toAvro(event);
-        log.debug("Запись в кафка: {}, ", avro.toString());
-        ProducerRecord pr = new ProducerRecord<>("telemetry.sensors.v1", avro);
-        client.getProducer().send(pr);
-        return ResponseEntity.ok("OK");
+
+    @Override
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+        try {
+            sensorEventHandlerRegistry.handle(request);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
+            ));
+        }
     }
 
-    @PostMapping("/events/hubs")
-    public ResponseEntity<String> collectHubEvent(@Valid @RequestBody HubEventCommonDto event) {
-        SpecificRecordBase avro = hubEventMapperCommon.toAvro(event);
-        log.debug("Запись в кафка: {}, ", avro.toString());
-        ProducerRecord pr = new ProducerRecord<>("telemetry.hubs.v1", avro);
-        client.getProducer().send(pr);
-        return ResponseEntity.ok("OK");
+    @Override
+    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
+        try {
+            hubEventHandlerRegistry.handle(request);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
+            ));
+        }
     }
 }
