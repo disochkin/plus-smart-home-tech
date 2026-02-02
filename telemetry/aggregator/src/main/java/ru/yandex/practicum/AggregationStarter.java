@@ -18,9 +18,8 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.serializer.AvroSerializer;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.Collections;
 import java.util.Properties;
-import java.util.UUID;
 
 /**
  * Класс AggregationStarter, ответственный за запуск агрегации данных.
@@ -46,13 +45,13 @@ public class AggregationStarter {
             // ... например, подписка на топик ...
             Properties consumerConfig = new Properties();
             consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-            consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "aggregator-" + UUID.randomUUID());
-            consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+            consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "aggregator");
+            consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
             consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
             consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
             consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorEventAvroDeserializer.class);
             consumer = new KafkaConsumer<>(consumerConfig);
-            consumer.subscribe(List.of("telemetry.sensors.v1"));
+            consumer.subscribe(Collections.singleton("telemetry.sensors.v1"));
 
             Properties producerConfig = new Properties();
             producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
