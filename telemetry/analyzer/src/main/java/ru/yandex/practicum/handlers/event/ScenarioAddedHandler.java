@@ -75,6 +75,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
     }
 
     private Set<Condition> mapToCondition(ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
+        log.info("Обрабатываем список условий {}", scenarioAddedEvent.getConditions());
         Set<String> sensorIds = scenarioAddedEvent.getConditions().stream()
                 .map(c -> c.getSensorId())
                 .collect(Collectors.toSet());
@@ -93,25 +94,21 @@ public class ScenarioAddedHandler implements HubEventHandler {
                 .collect(Collectors.toSet());
     }
 
-//        return scenarioAddedEvent.getConditions().stream()
-//                .map(c -> Condition.builder()
-//                        .sensor(sensorRepository.findById(c.getSensorId()).orElseThrow())
-//                        .scenario(scenario)
-//                        .type(c.getType())
-//                        .operation(c.getOperation())
-//                        .value(setValue(c.getValue()))
-//                        .build())
-//                .collect(Collectors.toSet());
-//    }
-
     private Set<Action> mapToAction(ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
         log.info("Обрабатываем список действий {}", scenarioAddedEvent.getActions());
+        Set<String> sensorIds = scenarioAddedEvent.getActions().stream()
+                .map(a -> a.getSensorId())
+                .collect(Collectors.toSet());
+
+        Map<String, Sensor> sensors = sensorRepository.findAllById(sensorIds).stream()
+                .collect(Collectors.toMap(Sensor::getId, s -> s));
+
         return scenarioAddedEvent.getActions().stream()
-                .map(action -> Action.builder()
-                        .sensor(sensorRepository.findById(action.getSensorId()).orElseThrow())
+                .map(a -> Action.builder()
+                        .sensor(sensors.get(a.getSensorId()))
                         .scenario(scenario)
-                        .type(action.getType())
-                        .value(action.getValue())
+                        .type(a.getType())
+                        .value(a.getValue())
                         .build())
                 .collect(Collectors.toSet());
     }
