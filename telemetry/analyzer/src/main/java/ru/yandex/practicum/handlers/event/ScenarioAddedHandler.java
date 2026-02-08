@@ -4,18 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
 import ru.yandex.practicum.model.Action;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
+import ru.yandex.practicum.model.Sensor;
 import ru.yandex.practicum.repository.ActionRepository;
 import ru.yandex.practicum.repository.ConditionRepository;
 import ru.yandex.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.repository.SensorRepository;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,9 +75,16 @@ public class ScenarioAddedHandler implements HubEventHandler {
     }
 
     private Set<Condition> mapToCondition(ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
+        Set<String> sensorIds = scenarioAddedEvent.getConditions().stream()
+                .map(c -> c.getSensorId())
+                .collect(Collectors.toSet());
+
+        Map<String, Sensor> sensors = sensorRepository.findAllById(sensorIds).stream()
+                .collect(Collectors.toMap(Sensor::getId, s -> s));
+
         return scenarioAddedEvent.getConditions().stream()
                 .map(c -> Condition.builder()
-                        .sensor(sensorRepository.findById(c.getSensorId()).orElseThrow())
+                        .sensor(sensors.get(c.getSensorId()))
                         .scenario(scenario)
                         .type(c.getType())
                         .operation(c.getOperation())
@@ -83,6 +92,17 @@ public class ScenarioAddedHandler implements HubEventHandler {
                         .build())
                 .collect(Collectors.toSet());
     }
+
+//        return scenarioAddedEvent.getConditions().stream()
+//                .map(c -> Condition.builder()
+//                        .sensor(sensorRepository.findById(c.getSensorId()).orElseThrow())
+//                        .scenario(scenario)
+//                        .type(c.getType())
+//                        .operation(c.getOperation())
+//                        .value(setValue(c.getValue()))
+//                        .build())
+//                .collect(Collectors.toSet());
+//    }
 
     private Set<Action> mapToAction(ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
         log.info("Обрабатываем список действий {}", scenarioAddedEvent.getActions());
