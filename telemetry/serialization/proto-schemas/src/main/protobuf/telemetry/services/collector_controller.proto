@@ -11,5 +11,5 @@ package telemetry.service.collector;
 service CollectorController {
   rpc CollectSensorEvent (SensorEventProto) returns (google.protobuf.Empty);
 
-  rpc CollectHubEvent (HubEventProto) returns (google.protobuf.Empty);
+  rpc CollectHubEvent (telemetry.message.event.HubEventProto) returns (google.protobuf.Empty);
 }
