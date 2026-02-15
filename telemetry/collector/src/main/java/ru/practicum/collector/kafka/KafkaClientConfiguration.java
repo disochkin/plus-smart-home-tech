@@ -4,6 +4,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -13,7 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 public class KafkaClientConfiguration {
-
+    @Value("${kafka.bootstrap-servers}")
+    private String bootstrapServers; 
     private final AtomicInteger counter = new AtomicInteger(0);
 
     @Bean
@@ -33,7 +35,7 @@ public class KafkaClientConfiguration {
 
             private void initProducer() {
                 Properties config = new Properties();
-                config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+                config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
                 config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
                 config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.practicum.collector.serializer.AvroSerializer");
                 producer = new KafkaProducer<>(config);
