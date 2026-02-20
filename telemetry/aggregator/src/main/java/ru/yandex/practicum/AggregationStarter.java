@@ -12,6 +12,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
@@ -39,27 +40,36 @@ public class AggregationStarter {
     private KafkaConsumer<String, SensorEventAvro> consumer;
     private KafkaProducer<String, SensorsSnapshotAvro> producer;
 
+    @Value("${kafka.bootstrap-servers}")
+    private String bootstrapServers; // localhost:9092
+    @Value("${kafka.group-id}")
+    private String consumerGroupId; // aggregator
+    @Value("${kafka.input-topic}")
+    private String inputTopic; // telemetry.sensors.v1
+    @Value("${kafka.output-topic}")
+    private String outputTopic; // telemetry.snapshots.v1
+
+
     public void start() {
         try {
             // ... подготовка к обработке данных ...
             // ... например, подписка на топик ...
             Properties consumerConfig = new Properties();
-            consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-            consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "aggregator");
+            consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+            consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
             consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
             consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
             consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
             consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorEventAvroDeserializer.class);
             consumer = new KafkaConsumer<>(consumerConfig);
-            consumer.subscribe(Collections.singleton("telemetry.sensors.v1"));
+            consumer.subscribe(Collections.singleton(inputTopic));
 
             Properties producerConfig = new Properties();
-            producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+            producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
             producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
             producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, AvroSerializer.class);
             producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
             producer = new KafkaProducer<>(producerConfig);
-            String topic = "telemetry.sensors.v1";
 
             // Цикл обработки событий
             while (true) {
@@ -77,7 +87,7 @@ public class AggregationStarter {
                             .ifPresent(snapshot -> {
                                 ProducerRecord<String, SensorsSnapshotAvro> out =
                                         new ProducerRecord<>(
-                                                "telemetry.snapshots.v1",
+                                                outputTopic,
                                                 snapshot.getHubId(),
                                                 snapshot
                                         );

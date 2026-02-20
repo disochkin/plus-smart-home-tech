@@ -1,0 +1,20 @@
+# application.properties_ol
+server:
+  port: 8080
+kafka:
+  bootstrap-servers: localhost:9092
+grpc:
+  server:
+    port: 59091
+
+#  spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+#  spring.kafka.producer.value-serializer=org.apache.kafka.common.serialization.StringSerializer
+
+
+
+#  logging.level.ru.practicum.*=DEBUG
+#  logbook.format.style=http
+#  logbook.write.level=TRACE
+#  logbook.include[0]=/events/sensors
+#  logbook.include[1]=/events/hubs
+#  logging.level.org.zalando.logbook=TRACE

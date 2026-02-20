@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import ru.practicum.collector.kafka.KafkaClient;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
@@ -16,7 +17,9 @@ import java.time.Instant;
 public abstract class AbstractKafkaSensorEventHandler<T extends SpecificRecordBase>
         implements SensorEventHandler {
 
-    protected static final String TOPIC = "telemetry.sensors.v1";
+    @Value("${kafka.sensor-topic}")
+    private static String sensorTopic; // telemetry.sensors.v1
+
     protected final KafkaClient kafkaClient;
 
     protected static SensorEventAvro.Builder baseBuilder(
@@ -47,7 +50,7 @@ public abstract class AbstractKafkaSensorEventHandler<T extends SpecificRecordBa
 
     protected void sendToKafka(SpecificRecordBase event) {
         ProducerRecord<String, SpecificRecordBase> record =
-                new ProducerRecord<>(TOPIC, event);
+                new ProducerRecord<>(sensorTopic, event);
 
         kafkaClient.getProducer()
                 .send(record, (metadata, exception) -> {
