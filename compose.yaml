@@ -42,7 +42,8 @@ services:
     environment:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=analyzer
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
