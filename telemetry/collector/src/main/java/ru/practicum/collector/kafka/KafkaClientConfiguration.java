@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 public class KafkaClientConfiguration {
-    @Value("${kafka.bootstrap-servers}")
-    private String bootstrapServers; 
     private final AtomicInteger counter = new AtomicInteger(0);
+    @Value("${kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
     @Bean
     @Scope("prototype")

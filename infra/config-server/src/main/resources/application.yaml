@@ -2,7 +2,7 @@ spring:
   application:
     name: config-server
   profiles:
-    active: native # Это отключает поиск Git по умолчанию
+    active: native
   cloud:
     config:
       server:
@@ -11,3 +11,8 @@ spring:
             - classpath:/config/telemetry/{application}
 server:
   port: 8888
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
