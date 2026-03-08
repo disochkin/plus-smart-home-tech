@@ -15,10 +15,7 @@ import ru.yandex.practicum.repository.WarehouseRepository;
 import ru.yandex.practicum.warehouse.AddressDto;
 
 import java.security.SecureRandom;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,13 +30,6 @@ public class WarehouseProductService {
             ADDRESSES[Random.from(new SecureRandom()).nextInt(0, ADDRESSES.length)];
     private final WarehouseRepository warehouseRepository;
     private final ProductWarehouseMapper productWarehouseMapper;
-
-//    @PostConstruct
-//    public void setupAddress() {
-//        STATIC_CONFIG = new HashMap<>();
-//        STATIC_CONFIG.put("spring.datasource.url", "jdbc:h2:mem:testdb");
-//        // Можно @Value или @Autowired
-//    }
 
     @Transactional
     public ProductWarehouse create(NewProductInWarehouseRequest newProductInWarehouseRequest) {
@@ -61,26 +51,35 @@ public class WarehouseProductService {
         BookedProductsDto bookedProductsDto = new BookedProductsDto();
 
         List<ProductWarehouse> existProducts = warehouseRepository.findAllById(shoppingCartDto.getProducts().keySet());
-        Map<UUID, ProductWarehouse> productsMap = existProducts.stream()
+
+        Map<UUID, ProductWarehouse> existProductsMap = existProducts.stream()
                 .collect(Collectors.toMap(
                         ProductWarehouse::getProductId,
-                        Function.identity()
-                ));
-        if (shoppingCartDto.getProducts().size() != productsMap.size()) {
-            throw new NotFoundException("not found");
+                        Function.identity()));
+
+        // Ключи map1, которых НЕТ в map2
+        Set<UUID> notFoundProducts = shoppingCartDto.getProducts().keySet().stream()
+                .filter(key -> !existProductsMap.containsKey(key))
+                .collect(Collectors.toSet());
+
+        if (!notFoundProducts.isEmpty()) {
+            throw new IllegalStateException(
+                    String.format("Продукты отсутствуют на складе: %s", notFoundProducts)
+            );
         }
 
         shoppingCartDto.getProducts().keySet().forEach(uuid -> {
-            ProductWarehouse existProduct = productsMap.get(uuid);
+            ProductWarehouse existProduct = existProductsMap.get(uuid);
             if (existProduct.getQuantity() < shoppingCartDto.getProducts().get(uuid)) {
-                throw new NotFoundException("not enough");
+                log.info("uuid: {}, existProduct: {}, shoppingCart: {}", uuid, existProduct.getQuantity(),
+                        shoppingCartDto.getProducts().get(uuid));
+                throw new NotFoundException(String.format("not enough, %s", uuid));
             }
             bookedProductsDto.addWeight(existProduct.getWeight());
             bookedProductsDto.addVolume(existProduct.getVolume());
             if (existProduct.getFragile()) {
                 bookedProductsDto.setFragile(true);
             }
-            existProduct.setQuantity(existProduct.getQuantity() - shoppingCartDto.getProducts().get(uuid));
         });
         warehouseRepository.saveAll(existProducts);
         return bookedProductsDto;

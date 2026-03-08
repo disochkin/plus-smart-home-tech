@@ -12,7 +12,7 @@ import java.util.UUID;
 public class ShoppingCart {
     @Id
     @Column(name = "uuid")
-    private UUID uuid;
+    private UUID shoppingCartId;
 
     @Column(name = "username")
     private String user;

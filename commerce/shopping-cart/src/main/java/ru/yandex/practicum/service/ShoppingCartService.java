@@ -41,7 +41,7 @@ public class ShoppingCartService {
         return shoppingCartRepository.findByUserIgnoreCase(username)
                 .orElseGet(() -> {
                     ShoppingCart shoppingCart = new ShoppingCart();
-                    shoppingCart.setUuid(UUID.randomUUID());
+                    shoppingCart.setShoppingCartId(UUID.randomUUID());
                     shoppingCart.setUser(username);
                     shoppingCart.setIsActive(true);
                     shoppingCart.setProducts(new HashMap<>());
@@ -61,11 +61,11 @@ public class ShoppingCartService {
         Map<UUID, Integer> existProductsInCart = shoppingCart.getProducts();
 
         ShoppingCartDto shoppingCartDto = new ShoppingCartDto(
-                shoppingCart.getUuid(),
+                shoppingCart.getShoppingCartId(),
                 products
         );
 
-        BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
+       BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
 
         Map<UUID, Integer> result = Stream.of(existProductsInCart, products)
                 .flatMap(m -> m.entrySet().stream())
@@ -123,7 +123,7 @@ public class ShoppingCartService {
         Map<UUID, Integer> products = shoppingCart.getProducts();
 
         ShoppingCartDto shoppingCartDto = new ShoppingCartDto(
-                shoppingCart.getUuid(),
+                shoppingCart.getShoppingCartId(),
                 products);
 
         BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
