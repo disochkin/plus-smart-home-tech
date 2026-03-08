@@ -1,4 +1,4 @@
-package ru.yandex.practicum.dto.product;
+package ru.yandex.practicum.dto.ShoppingStore;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class ProductQuantityUpdateDto {
+public class SetProductQuantityStateRequest {
     @NotNull
     private UUID productId;
 

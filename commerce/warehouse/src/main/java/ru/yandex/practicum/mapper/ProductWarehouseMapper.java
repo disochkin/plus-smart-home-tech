@@ -2,8 +2,8 @@ package ru.yandex.practicum.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.yandex.practicum.dto.product.DimensionDto;
-import ru.yandex.practicum.dto.product.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.Warehouse.DimensionDto;
+import ru.yandex.practicum.dto.Warehouse.NewProductInWarehouseRequest;
 import ru.yandex.practicum.model.ProductWarehouse;
 import ru.yandex.practicum.model.ProductWarehouseDimension;
 

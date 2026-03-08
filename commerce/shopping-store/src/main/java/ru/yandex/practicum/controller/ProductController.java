@@ -8,7 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.product.*;
+import ru.yandex.practicum.dto.ShoppingStore.ProductChangeAnswer;
+import ru.yandex.practicum.dto.ShoppingStore.ProductDto;
+import ru.yandex.practicum.dto.ShoppingStore.QuantityState;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.service.ProductService;
 
@@ -23,9 +25,9 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/{productId}")
-    public ProductShortDto getProductById(@PathVariable("productId") UUID productId) {
+    public ProductDto getProductById(@PathVariable("productId") UUID productId) {
         log.info("Product request, productId={}", productId);
-        ProductShortDto product = productService.getProductById(productId);
+        ProductDto product = productService.getProductById(productId);
         log.info("Found product: id={}", product.getProductId());
         return product;
     }
@@ -41,15 +43,15 @@ public class ProductController {
 
     @PutMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductShortDto create(@Valid @RequestBody NewProductDto newProductDto) {
-        log.debug("New product create request: {}", newProductDto);
-        return productService.create(newProductDto);
+    public ProductDto create(@Valid @RequestBody ProductDto productDto) {
+        log.debug("New product create request: {}", productDto);
+        return productService.create(productDto);
     }
 
     @PostMapping("")
-    public ProductShortDto update(@RequestBody @Valid UpdateProductDto updateProductDto) {
-        log.debug("Update request {}", updateProductDto);
-        return productService.update(updateProductDto);
+    public ProductDto update(@RequestBody @Valid ProductDto productDto) {
+        log.debug("Update request {}", productDto);
+        return productService.update(productDto);
     }
 
 

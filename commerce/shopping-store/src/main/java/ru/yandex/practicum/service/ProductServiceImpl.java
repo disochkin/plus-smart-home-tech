@@ -7,7 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.product.*;
+import ru.yandex.practicum.dto.ShoppingStore.ProductDto;
+import ru.yandex.practicum.dto.ShoppingStore.ProductState;
+import ru.yandex.practicum.dto.ShoppingStore.QuantityState;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.mapper.ProductMapper;
 import ru.yandex.practicum.model.Product;
@@ -25,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductShortDto getProductById(UUID productId) {
+    public ProductDto getProductById(UUID productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException(String.format("Product with id = %d not found", productId)));
         //     .orElseThrow(() -> new EntityNotFoundException(String.format("Product with id = %s not found", productId)));
@@ -39,18 +41,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional
-    public ProductShortDto create(NewProductDto newProductDto) {
-        Product product = productRepository.save(productMapper.toProduct(newProductDto));
+    public ProductDto create(ProductDto productDto) {
+        Product product = productRepository.save(productMapper.toProduct(productDto));
         return productMapper.toShortDto(product);
     }
 
     @Transactional
-    public ProductShortDto update(UpdateProductDto updateProductDto) {
+    public ProductDto update(ProductDto productDto) {
         Product existProduct = productRepository
-                .findById(updateProductDto.getProductId())
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + updateProductDto.getProductId() + " не найдена"));
+                .findById(productDto.getProductId())
+                .orElseThrow(() -> new NotFoundException("Вещь с ID " + productDto.getProductId() + " не найдена"));
 
-        Product product = productRepository.save(productMapper.updateProductToProduct(updateProductDto));
+        Product product = productRepository.save(productMapper.toProduct(productDto));
         return productMapper.toShortDto(product);
     }
 

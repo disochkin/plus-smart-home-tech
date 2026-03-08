@@ -6,13 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.product.AddProductToWarehouseRequest;
-import ru.yandex.practicum.dto.product.NewProductInWarehouseRequest;
-import ru.yandex.practicum.dto.product.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.dto.product.warehouse.BookedProductsDto;
+import ru.yandex.practicum.dto.ShoppingCart.ShoppingCartDto;
+import ru.yandex.practicum.dto.Warehouse.AddProductToWarehouseRequest;
+import ru.yandex.practicum.dto.Warehouse.AddressDto;
+import ru.yandex.practicum.dto.Warehouse.BookedProductsDto;
+import ru.yandex.practicum.dto.Warehouse.NewProductInWarehouseRequest;
 import ru.yandex.practicum.model.ProductWarehouse;
 import ru.yandex.practicum.service.WarehouseProductService;
-import ru.yandex.practicum.warehouse.AddressDto;
 
 @Slf4j
 @RestController

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.dto.product;
+package ru.yandex.practicum.dto.ShoppingStore;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
-public class ProductShortDto {
+public class ProductDto {
     private UUID productId;
 
     private String productName;

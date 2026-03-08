@@ -4,8 +4,8 @@ import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import ru.yandex.practicum.dto.product.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.dto.product.warehouse.BookedProductsDto;
+import ru.yandex.practicum.dto.ShoppingCart.ShoppingCartDto;
+import ru.yandex.practicum.dto.Warehouse.BookedProductsDto;
 
 @FeignClient(name = "warehouse")
 public interface WarehouseClient {
