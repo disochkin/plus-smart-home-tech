@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.ShoppingCart.ShoppingCartDto;
 import ru.yandex.practicum.dto.Warehouse.AddProductToWarehouseRequest;
@@ -18,9 +17,8 @@ import ru.yandex.practicum.service.WarehouseProductService;
 @RestController
 @RequestMapping("/api/v1/warehouse")
 @RequiredArgsConstructor
-@Validated
 public class WarehouseController {
-    final WarehouseProductService warehouseProductService;
+    private final WarehouseProductService warehouseProductService;
 
     @PutMapping("")
     @ResponseStatus(HttpStatus.CREATED)

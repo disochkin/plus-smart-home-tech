@@ -33,7 +33,6 @@ public class WarehouseProductService {
     private final WarehouseRepository warehouseRepository;
     private final ProductWarehouseMapper productWarehouseMapper;
 
-    @Transactional
     public ProductWarehouse create(NewProductInWarehouseRequest newProductInWarehouseRequest) {
         warehouseRepository.findById(newProductInWarehouseRequest.getProductId())
                 .ifPresent(product -> {
@@ -45,7 +44,6 @@ public class WarehouseProductService {
         return productWarehouse;
     }
 
-    @Transactional
     public void add(AddProductToWarehouseRequest addProductToWarehouseRequest) {
         UUID productId = addProductToWarehouseRequest.getProductId();
 
@@ -55,7 +53,6 @@ public class WarehouseProductService {
         warehouseRepository.save(productWarehouse);
     }
 
-    @Transactional
     public BookedProductsDto check(ShoppingCartDto shoppingCartDto) {
         BookedProductsDto bookedProductsDto = new BookedProductsDto();
 

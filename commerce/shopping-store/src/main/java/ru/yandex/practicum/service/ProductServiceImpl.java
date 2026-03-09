@@ -39,13 +39,11 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll(spec, pageable);
     }
 
-    @Transactional
     public ProductDto create(ProductDto productDto) {
         Product product = productRepository.save(productMapper.toProduct(productDto));
         return productMapper.toShortDto(product);
     }
 
-    @Transactional
     public ProductDto update(ProductDto productDto) {
         Product existProduct = productRepository
                 .findById(productDto.getProductId())
@@ -55,7 +53,6 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toShortDto(product);
     }
 
-    @Transactional
     public void deactivateProduct(UUID productId) {
         Product existProduct = productRepository
                 .findById(productId)
@@ -64,7 +61,6 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(existProduct);
     }
 
-    @Transactional
     public void changeQuantityState(UUID productId, QuantityState quantityState) {
         Product existProduct = productRepository
                 .findById(productId)

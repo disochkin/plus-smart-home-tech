@@ -1,15 +1,17 @@
 package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Data
 @Table(name = "shopping_cart")
+@Getter
+@Setter
 public class ShoppingCart {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

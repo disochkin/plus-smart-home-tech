@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.ShoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.ShoppingCart.ShoppingCartDto;
@@ -19,7 +18,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/shopping-cart")
 @RequiredArgsConstructor
-@Validated
 public class ShoppingCartController {
     final private ShoppingCartService shoppingCartService;
 
