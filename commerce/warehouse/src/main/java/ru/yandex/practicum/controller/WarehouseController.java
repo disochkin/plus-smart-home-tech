@@ -16,37 +16,37 @@ import ru.yandex.practicum.service.WarehouseProductService;
 
 @Slf4j
 @RestController
-//@RequestMapping("/api/v1/warehouse")
+@RequestMapping("/api/v1/warehouse")
 @RequiredArgsConstructor
 @Validated
 public class WarehouseController {
     final WarehouseProductService warehouseProductService;
 
-    @PutMapping("/api/v1/warehouse")
+    @PutMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductWarehouse create(@Valid @RequestBody NewProductInWarehouseRequest newProductInWarehouseRequest) {
-        log.debug("New product warehouse create request: {}", newProductInWarehouseRequest);
+        log.debug("Запрос на создание нового продукта на складе: {}", newProductInWarehouseRequest);
         return warehouseProductService.create(newProductInWarehouseRequest);
     }
 
-    @PostMapping("/api/v1/warehouse/add")
+    @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
     public void add(@Valid @RequestBody AddProductToWarehouseRequest addProductToWarehouseRequest) {
-        log.debug("Add product to warehouse request: {}", addProductToWarehouseRequest);
+        log.debug("Запрос на добавление нового продукта на складе: {}", addProductToWarehouseRequest);
         warehouseProductService.add(addProductToWarehouseRequest);
     }
 
-    @PostMapping("/api/v1/warehouse/check")
+    @PostMapping("/check")
     @ResponseStatus(HttpStatus.OK)
     public BookedProductsDto check(@Valid @RequestBody ShoppingCartDto shoppingCartDto) {
-        log.debug("Check request product: {}", shoppingCartDto);
+        log.debug("Проверка наличия на складе: {}", shoppingCartDto);
         return warehouseProductService.check(shoppingCartDto);
     }
 
-    @GetMapping("/api/v1/warehouse/address")
+    @GetMapping("/address")
     @ResponseStatus(HttpStatus.OK)
     public AddressDto address() {
-        log.debug("Address request");
+        log.debug("Запрос адреса");
         return warehouseProductService.address();
     }
 }

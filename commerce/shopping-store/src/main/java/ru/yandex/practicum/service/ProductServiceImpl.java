@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.ShoppingStore.ProductDto;
 import ru.yandex.practicum.dto.ShoppingStore.ProductState;
 import ru.yandex.practicum.dto.ShoppingStore.QuantityState;
-import ru.yandex.practicum.exception.NotFoundException;
+import ru.yandex.practicum.exceptions.ProductNotFoundException;
 import ru.yandex.practicum.mapper.ProductMapper;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.repository.ProductRepository;
@@ -29,8 +29,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public ProductDto getProductById(UUID productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException(String.format("Product with id = %d not found", productId)));
-        //     .orElseThrow(() -> new EntityNotFoundException(String.format("Product with id = %s not found", productId)));
+                .orElseThrow(() -> new ProductNotFoundException(String.format("Product with id = %s not found", productId)));
         return productMapper.toShortDto(product);
     }
 
@@ -50,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto update(ProductDto productDto) {
         Product existProduct = productRepository
                 .findById(productDto.getProductId())
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + productDto.getProductId() + " не найдена"));
+                .orElseThrow(() -> new ProductNotFoundException("Вещь с ID " + productDto.getProductId() + " не найдена"));
 
         Product product = productRepository.save(productMapper.toProduct(productDto));
         return productMapper.toShortDto(product);
@@ -60,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
     public void deactivateProduct(UUID productId) {
         Product existProduct = productRepository
                 .findById(productId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + productId + " не найдена"));
+                .orElseThrow(() -> new ProductNotFoundException("Вещь с ID " + productId + " не найдена"));
         existProduct.setProductState(ProductState.DEACTIVATE);
         productRepository.save(existProduct);
     }
@@ -69,7 +68,7 @@ public class ProductServiceImpl implements ProductService {
     public void changeQuantityState(UUID productId, QuantityState quantityState) {
         Product existProduct = productRepository
                 .findById(productId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + productId + " не найдена"));
+                .orElseThrow(() -> new ProductNotFoundException("Вещь с ID " + productId + " не найдена"));
         existProduct.setQuantityState(quantityState);
         productRepository.save(existProduct);
     }

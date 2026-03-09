@@ -9,7 +9,9 @@ import ru.yandex.practicum.dto.Warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.Warehouse.AddressDto;
 import ru.yandex.practicum.dto.Warehouse.BookedProductsDto;
 import ru.yandex.practicum.dto.Warehouse.NewProductInWarehouseRequest;
-import ru.yandex.practicum.exception.NotFoundException;
+import ru.yandex.practicum.exceptions.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exceptions.ProductNotFoundException;
+import ru.yandex.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.mapper.ProductWarehouseMapper;
 import ru.yandex.practicum.model.ProductWarehouse;
 import ru.yandex.practicum.repository.WarehouseRepository;
@@ -33,7 +35,14 @@ public class WarehouseProductService {
 
     @Transactional
     public ProductWarehouse create(NewProductInWarehouseRequest newProductInWarehouseRequest) {
-        return warehouseRepository.save(productWarehouseMapper.toProductWarehouse(newProductInWarehouseRequest));
+        warehouseRepository.findById(newProductInWarehouseRequest.getProductId())
+                .ifPresent(product -> {
+                    throw new SpecifiedProductAlreadyInWarehouseException(String.format("Продукт с id='%s' уже зарегистрирован на складе",
+                            newProductInWarehouseRequest.getProductId()));
+                });
+        ProductWarehouse productWarehouse =  warehouseRepository.save(productWarehouseMapper.toProductWarehouse(newProductInWarehouseRequest));
+        log.debug("Новый товар {} успешно зарегистрован на складе", productWarehouse);
+        return productWarehouse;
     }
 
     @Transactional
@@ -41,7 +50,7 @@ public class WarehouseProductService {
         UUID productId = addProductToWarehouseRequest.getProductId();
 
         ProductWarehouse productWarehouse = warehouseRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException(String.format("Product with id = %s not found", productId)));
+                .orElseThrow(() -> new ProductNotFoundException(String.format("Продукт id='%s' не найден на складе", productId)));
         productWarehouse.setQuantity(productWarehouse.getQuantity() + addProductToWarehouseRequest.getQuantity());
         warehouseRepository.save(productWarehouse);
     }
@@ -57,13 +66,12 @@ public class WarehouseProductService {
                         ProductWarehouse::getProductId,
                         Function.identity()));
 
-        // Ключи map1, которых НЕТ в map2
         Set<UUID> notFoundProducts = shoppingCartDto.getProducts().keySet().stream()
                 .filter(key -> !existProductsMap.containsKey(key))
                 .collect(Collectors.toSet());
 
         if (!notFoundProducts.isEmpty()) {
-            throw new IllegalStateException(
+            throw new ProductNotFoundException(
                     String.format("Продукты отсутствуют на складе: %s", notFoundProducts)
             );
         }
@@ -73,7 +81,7 @@ public class WarehouseProductService {
             if (existProduct.getQuantity() < shoppingCartDto.getProducts().get(uuid)) {
                 log.info("uuid: {}, existProduct: {}, shoppingCart: {}", uuid, existProduct.getQuantity(),
                         shoppingCartDto.getProducts().get(uuid));
-                throw new NotFoundException(String.format("not enough, %s", uuid));
+                throw new ProductInShoppingCartLowQuantityInWarehouse(String.format("not enough, %s", uuid));
             }
             bookedProductsDto.addWeight(existProduct.getWeight());
             bookedProductsDto.addVolume(existProduct.getVolume());

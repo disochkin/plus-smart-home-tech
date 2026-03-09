@@ -26,10 +26,8 @@ public class ProductController {
 
     @GetMapping("/{productId}")
     public ProductDto getProductById(@PathVariable("productId") UUID productId) {
-        log.info("Product request, productId={}", productId);
-        ProductDto product = productService.getProductById(productId);
-        log.info("Found product: id={}", product.getProductId());
-        return product;
+        log.info("Запрос продукта, id={}", productId);
+        return productService.getProductById(productId);
     }
 
     @GetMapping("")
@@ -37,20 +35,20 @@ public class ProductController {
             @RequestParam("category") String productCategory,
             Pageable pageable
     ) {
-        log.debug("Get product request category: {}, pagination params: {}", productCategory, pageable);
+        log.info("Запрос продукта. Категория: {}, параметры пагинации: {}", productCategory, pageable);
         return productService.getProducts(productCategory, pageable);
     }
 
     @PutMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductDto create(@Valid @RequestBody ProductDto productDto) {
-        log.debug("New product create request: {}", productDto);
+        log.info("Запрос на добавление нового продукта: {}", productDto);
         return productService.create(productDto);
     }
 
     @PostMapping("")
     public ProductDto update(@RequestBody @Valid ProductDto productDto) {
-        log.debug("Update request {}", productDto);
+        log.info("Запрос на обновление продукта: {}", productDto);
         return productService.update(productDto);
     }
 
@@ -59,7 +57,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductChangeAnswer deactivateProduct(@RequestBody String uuidString) {
         UUID uuid = UUID.fromString(uuidString.trim().replaceAll("[\"']", ""));
-        log.debug("Delete request {}", uuid);
+        log.info("Запрос на удаление, id='{}'", uuid);
         productService.deactivateProduct(uuid);
         return new ProductChangeAnswer();
     }
@@ -68,7 +66,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductChangeAnswer changeQuantityState(@RequestParam("productId") UUID productId,
                                                    @RequestParam("quantityState") QuantityState quantityState) {
-        log.debug("Change product ID {} quantity request", productId);
+        log.info("Запрос на изменение количества, id='{}', ", productId);
         productService.changeQuantityState(productId, quantityState);
         return new ProductChangeAnswer();
     }
