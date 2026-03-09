@@ -26,7 +26,7 @@ public class ShoppingCartController {
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     public ShoppingCartDto getShoppingCart(@RequestParam("username") String username) {
-        log.debug("Shopping cart request for User: {}", username);
+        log.info("Запрос корзины пользователя: {}", username);
         return shoppingCartService.getShoppingCart(username);
     }
 
@@ -34,23 +34,23 @@ public class ShoppingCartController {
     @ResponseStatus(HttpStatus.OK)
     public ShoppingCart addProductsToCart(@RequestParam("username") String username,
                                           @Valid @RequestBody Map<UUID, Integer> products) {
-        log.info("User: {}", username);
-        log.info("Add product to shopping cart: {}", products);
-        return shoppingCartService.create(username, products);
+        log.info("Запрос на добавление продуктов в корзину. Пользователь: {}, продукты: {}", username, products);
+        return shoppingCartService.addProductsToShoppingCartByUserName(username, products);
     }
 
     @DeleteMapping("")
     @ResponseStatus(HttpStatus.OK)
     public void delete(@RequestParam("username") String username) {
-        log.debug("Request for deactivate shopping cart for user: {}", username);
-        shoppingCartService.delete(username);
+        log.debug("Запрос на деактивацию корзины пользователя: {}", username);
+        shoppingCartService.deactivateShoppingCart(username);
     }
 
     @PostMapping("/remove")
     @ResponseStatus(HttpStatus.OK)
     public ShoppingCart remove(@RequestParam("username") String username,
                                @RequestBody List<UUID> products) {
-        log.debug("Request for remove products from shopping cart: {}", username);
+        log.debug("Запрос на удаление продуктов из корзины пользователя: {}, продукты: {}",
+                username, products);
         return shoppingCartService.remove(username, products);
     }
 

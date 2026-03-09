@@ -3,6 +3,7 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Table(name = "shopping_cart")
 public class ShoppingCart {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "uuid")
     private UUID shoppingCartId;
 
@@ -18,7 +20,7 @@ public class ShoppingCart {
     private String user;
 
     @Column(name = "isActive")
-    private Boolean isActive;
+    private Boolean isActive=true;
 
     @ElementCollection
     @CollectionTable(
@@ -27,5 +29,5 @@ public class ShoppingCart {
     )
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    private Map<UUID, Integer> products;
+    private Map<UUID, Integer> products = new HashMap<>();;
 }

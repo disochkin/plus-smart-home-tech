@@ -1,6 +1,5 @@
 package ru.yandex.practicum.service;
 
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,11 +8,14 @@ import ru.yandex.practicum.clients.WarehouseClient;
 import ru.yandex.practicum.dto.ShoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.ShoppingCart.ShoppingCartDto;
 import ru.yandex.practicum.dto.Warehouse.BookedProductsDto;
+import ru.yandex.practicum.exceptions.DeactivateCartException;
+import ru.yandex.practicum.exceptions.NoProductsInShoppingCartException;
+import ru.yandex.practicum.exceptions.NotAuthorizedUserException;
+import ru.yandex.practicum.exceptions.ShoppingCartNotFoundException;
 import ru.yandex.practicum.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.model.ShoppingCart;
 import ru.yandex.practicum.repository.ShoppingCartRepository;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,93 +33,91 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Transactional(readOnly = true)
     public ShoppingCartDto getShoppingCart(String username) {
-        ShoppingCart shoppingCart = shoppingCartRepository.findByUserIgnoreCase(username)
-                .orElseThrow(() -> new NotFoundException(String.format("Shopping cart for user: %s not found", username)));
+        checkUsername(username);
+        ShoppingCart shoppingCart = getOrCreate(username);
         return shoppingCartMapper.toShoppingCartDto(shoppingCart);
     }
-
 
     private ShoppingCart getOrCreate(String username) {
         return shoppingCartRepository.findByUserIgnoreCase(username)
                 .orElseGet(() -> {
                     ShoppingCart shoppingCart = new ShoppingCart();
-                    shoppingCart.setShoppingCartId(UUID.randomUUID());
-                    shoppingCart.setUser(username);
-                    shoppingCart.setIsActive(true);
-                    shoppingCart.setProducts(new HashMap<>());
+                    shoppingCart.setUser(username);;
                     shoppingCartRepository.save(shoppingCart);
+                    log.info("Корзина не найдена, создали новую uuid='{}'", shoppingCart.getShoppingCartId());
                     return shoppingCart;
                 });
     }
 
     @Transactional
-    public ShoppingCart create(String username, Map<UUID, Integer> products) {
-
+    public ShoppingCart addProductsToShoppingCartByUserName(String username, Map<UUID, Integer> newProducts) {
+        checkUsername(username);
+        log.info("Поиск существующей корзины по username='{}'", username);
         ShoppingCart shoppingCart = this.getOrCreate(username);
-        if (!shoppingCart.getIsActive()) {
-            throw new RuntimeException();
-        }
-
+        log.info("Используем корзину uuid='{}'", shoppingCart.getShoppingCartId());
+        checkShoppingCartState(shoppingCart);
         Map<UUID, Integer> existProductsInCart = shoppingCart.getProducts();
+        log.info("Исходное содержимое корзины uuid='{}', products='{}'", shoppingCart.getShoppingCartId(), existProductsInCart);
 
-        ShoppingCartDto shoppingCartDto = new ShoppingCartDto(
-                shoppingCart.getShoppingCartId(),
-                products
-        );
-
-        BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
-
-        Map<UUID, Integer> result = Stream.of(existProductsInCart, products)
+        // Складываем мапы по uuid
+        Map<UUID, Integer> totalProducts = Stream.of(existProductsInCart, newProducts)
                 .flatMap(m -> m.entrySet().stream())
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
                         Integer::sum
                 ));
-
-        shoppingCart.setProducts(result);
-
+        log.info("Обновленное содержимое корзины {}", totalProducts);
+        ShoppingCartDto shoppingCartDto = new ShoppingCartDto(
+                shoppingCart.getShoppingCartId(),
+                totalProducts
+        );
+        BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
+        log.info("Проверили наличие на складе, заказ {}", bookedProductsDto);
+        shoppingCart.setProducts(totalProducts);
         return shoppingCartRepository.save(shoppingCart);
     }
 
     @Transactional
-    public void delete(String username) {
+    public void deactivateShoppingCart(String username) {
+        checkUsername(username);
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserIgnoreCase(username)
-                .orElseThrow(() -> new NotFoundException(String.format("Shopping cart for user: %d not found", username)));
+                .orElseThrow(() -> new ShoppingCartNotFoundException(String.format("Корзина не найдена, user: %s", username)));
         if (shoppingCart.getIsActive()) {
             shoppingCart.setIsActive(false);
+            shoppingCartRepository.save(shoppingCart);
+            log.info("Корзина id='{}', пользователь='{}' деактивирована", shoppingCart.getShoppingCartId(),
+                                                                          shoppingCart.getUser());
         }
     }
 
     @Transactional
-    public ShoppingCart remove(String username, List<UUID> products) {
+    public ShoppingCart remove(String username, List<UUID> productsToRemove) {
+        checkUsername(username);
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserIgnoreCase(username)
-                .orElseThrow(() -> new NotFoundException(String.format("Shopping cart for user: %d not found", username)));
-        if (!shoppingCart.getIsActive()) {
-            throw new RuntimeException();
-        }
-        List<UUID> missingKeys = products.stream()
+                .orElseThrow(() -> new ShoppingCartNotFoundException(String.format("Корзина не найдена, user: %s", username)));
+        checkShoppingCartState(shoppingCart);
+        List<UUID> missingKeys = productsToRemove.stream()
                 .filter(uuid -> !shoppingCart.getProducts().containsKey(uuid))
                 .collect(Collectors.toList());
         if (!missingKeys.isEmpty()) {
-            throw new RuntimeException("Product not found " + missingKeys);
+            throw new NoProductsInShoppingCartException("Продукты для удаления не найдены в корзине: " + missingKeys);
         }
-        products.forEach(shoppingCart.getProducts().keySet()::remove);
-
+        productsToRemove.forEach(shoppingCart.getProducts().keySet()::remove);
         shoppingCartRepository.save(shoppingCart);
+        log.info("Обновленная корзина сохранена {}", shoppingCart);
         return shoppingCart;
     }
 
     @Transactional
     public ShoppingCart changeQuantity(String username, ChangeProductQuantityRequest changeProductQuantityRequest) {
+        checkUsername(username);
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserIgnoreCase(username)
-                .orElseThrow(() -> new NotFoundException(String.format("Shopping cart for user: %d not found", username)));
-        if (!shoppingCart.getIsActive()) {
-            throw new RuntimeException();
-        }
+                .orElseThrow(() -> new ShoppingCartNotFoundException(String.format("Корзина не найдена, user: %s", username)));
+        checkShoppingCartState(shoppingCart);
 
         if (!shoppingCart.getProducts().containsKey(changeProductQuantityRequest.getProductId())) {
-            throw new RuntimeException("Product not found " + changeProductQuantityRequest.getProductId());
+            throw new RuntimeException(String.format("Продукт %s не найден в корзине", changeProductQuantityRequest.getProductId()));
         }
 
         Map<UUID, Integer> products = shoppingCart.getProducts();
@@ -126,11 +126,27 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 shoppingCart.getShoppingCartId(),
                 products);
 
-        BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
         products.put(changeProductQuantityRequest.getProductId(),
                 changeProductQuantityRequest.getNewQuantity());
+        log.info("Обновленное содержимое корзины {}", products);
+        BookedProductsDto bookedProductsDto = warehouseClient.check(shoppingCartDto);
+        log.info("Проверили наличие на складе, заказ {}", bookedProductsDto);
         shoppingCartRepository.save(shoppingCart);
         return shoppingCart;
     }
+
+    private void checkUsername(String username) {
+        if (username.isBlank()) {
+            throw new NotAuthorizedUserException("Недопустимое имя пользователя");
+        }
+    }
+
+    private void checkShoppingCartState(ShoppingCart shoppingCart) {
+        if (!shoppingCart.getIsActive()) {
+            throw new DeactivateCartException(String.format("Корзина uuid='%s', user='%s' не активна",
+                    shoppingCart.getShoppingCartId(), shoppingCart.getUser()));
+        }
+    }
+
 
 }
