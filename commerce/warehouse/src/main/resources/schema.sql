@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS products (
+    product_id UUID PRIMARY KEY,
+	fragile BOOLEAN NOT NULL,
+	width FLOAT NOT NULL,
+	height FLOAT NOT NULL,
+	depth FLOAT NOT NULL,
+	weight FLOAT NOT NULL,
+	quantity INTEGER DEFAULT 0
+);

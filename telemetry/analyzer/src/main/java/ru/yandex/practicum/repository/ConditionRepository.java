@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface ConditionRepository extends JpaRepository<Condition, Long> {
     void deleteByScenario(Scenario scenario);
+
     List<Condition> findAllByScenario(Scenario scenario);
 }

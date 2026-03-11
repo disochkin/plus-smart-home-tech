@@ -2,7 +2,7 @@ spring:
   application:
     name: config-server
   profiles:
-    active: native # Это отключает поиск Git по умолчанию
+    active: native
   cloud:
     config:
       server:
